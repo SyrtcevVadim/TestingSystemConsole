@@ -32,12 +32,9 @@ namespace TestingSystemConsole
                 pathToTestsFile = args[1];
                 pathToAnswersFile = args[2];
 
-                // Тестируем класс TestReader 
-                TestsReader testsReader = new TestsReader(pathToTestsFile);
-                for(uint i = 1; i<=testsReader.TestsQuantity; i++)
-                {
-                    Console.WriteLine(testsReader.GetNextTestData());
-                }
+                
+
+                
 
             }
             else if(args.Length == 4)
@@ -47,10 +44,24 @@ namespace TestingSystemConsole
                 pathToAnswersFile = args[2];
                 pathToRestrictionsFile = args[3];
 
+                // Тестируем класс TestReader 
+                TestsReader testsReader = new TestsReader(pathToTestsFile);
+                for (uint i = 1; i <= testsReader.TestsQuantity; i++)
+                {
+                    Console.WriteLine(testsReader.GetNextTestData());
+                }
+
+                // Тестируем класс AnswersReader
+                AnswersReader answersReader = new AnswersReader(pathToAnswersFile);
+                Console.WriteLine("Эталонные ответы: ");
+                Console.WriteLine(answersReader.GetNextAnswerData());
+                Console.WriteLine(answersReader.GetNextAnswerData());
+
                 // Тестируем класс RestrictionsReader
                 RestrictionsReader restrictionsReader = new RestrictionsReader(pathToRestrictionsFile);
                 Console.WriteLine("Ограничения по использованию памяти: {0} Мб", restrictionsReader.MemoryLimitInMegabytes);
                 Console.WriteLine("Ограничения на время работы пользовательской программы: {0} мс", restrictionsReader.TimeLimitInMilliseconds);
+
 
             }
 
