@@ -1,41 +1,61 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.IO;
+
 namespace TestingSystemConsole
 {
     /// <summary>
-    /// Класс для считывания тестовых данных из файла
+    /// Класс для считывания тестовых данных из файла тестовых данных
     /// </summary>
     class TestsReader
     {
+        /// <summary>
+        /// Поток, связанный с файлом с тестами для пользовательской программы
+        /// </summary>
         private FileStream testsFile;
+
         /// <summary>
         /// Поток для чтения, связанный с файлом с тестами
         /// </summary>
         private StreamReader reader;
 
+        
+        private uint testsQuantity;
         /// <summary>
         /// Количество тестов в файле
         /// </summary>
-        private uint testsQuantity;
-
+        public uint TestsQuantity
+        {
+            get
+            {
+                return testsQuantity;
+            }
+        }
+        
+        private string currentTestName;
         /// <summary>
         /// Название текущего выполняемого теста
         /// </summary>
-        private string currentTestName;
+        public string CurrentTestName
+        {
+            get
+            {
+                return currentTestName;
+            }
+        }
 
         /// <summary>
         /// Флаг, показывающий, остались ли в файле тесты для считывания или нет.
         /// </summary>
         private bool hasRemainingTests;
+
         public TestsReader(string pathToTestsFile)
         {
+            // Создаем поток, связанный с файлом с тестами
             testsFile = new FileStream(pathToTestsFile, FileMode.Open);
             
+            // Создаем для этого файла поток для чтения
             reader = new StreamReader(testsFile);
+
             // Считываем количество тестов в файле
             testsQuantity = Convert.ToUInt32(reader.ReadLine());
             Console.WriteLine("В файле записано {0} тестов!", testsQuantity);
@@ -79,14 +99,5 @@ namespace TestingSystemConsole
                 return "";
             }
         }
-
-        /// <summary>
-        /// Возвращает количество тестов в файле
-        /// </summary>
-        public uint GetTestsQuantity()
-        {
-            return testsQuantity;
-        }
-
     }
 }

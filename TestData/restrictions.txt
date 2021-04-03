@@ -1,0 +1,2 @@
+#TimeLimit 2000
+#MemoryLimit 256
