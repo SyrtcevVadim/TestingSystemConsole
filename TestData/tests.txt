@@ -1,0 +1,9 @@
+2
+#Test First test case
+1 1 1
+2 2 2
+3 3 3
+
+#Test Another test case
+45 66 883 
+223 88 90 0
