@@ -68,6 +68,12 @@ namespace TestingSystemConsole
             }
         }
 
+        ~TestsReader()
+        {
+            reader.Close();
+            testsFile.Close();
+        }
+
         /// <summary>
         /// Получает информацию из следующего теста в файле
         /// </summary>

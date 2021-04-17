@@ -55,6 +55,8 @@ namespace TestingSystemConsole
             string memoryLimitString = reader.ReadLine();
             TimeLimitInMilliseconds = Convert.ToInt32(timeLimitString.Substring(timeLimitString.IndexOf(' ')));
             MemoryLimitInMegabytes = Convert.ToInt32(memoryLimitString.Substring(memoryLimitString.IndexOf(' ')));
+
+            reader.Close();
         }
     }
 }

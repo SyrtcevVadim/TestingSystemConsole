@@ -24,6 +24,12 @@ namespace TestingSystemConsole
             reader = new StreamReader(answersFile);
         }
 
+        ~AnswersReader()
+        {
+            reader.Close();
+            answersFile.Close();
+        }
+
         /// <summary>
         /// Считываем очередную эталонные ответы для соответствующего тестового случая
         /// </summary>
@@ -44,5 +50,6 @@ namespace TestingSystemConsole
 
             return currentAnswerData;
         }
+    
     }
 }
