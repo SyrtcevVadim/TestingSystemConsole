@@ -27,7 +27,7 @@ namespace TestingSystemConsole
         /// <summary>
         /// Читает информацию из файлов ответов
         /// </summary>
-        private AnswersReader answersReader;
+        private AnwerChecker answersReader;
 
         /// <summary>
         /// Читает информацию из файлов ограничений
@@ -59,7 +59,7 @@ namespace TestingSystemConsole
 
             // Связываем файлы и объектами для их чтения
             testsReader = new TestsReader(pathToTestsFile);
-            answersReader = new AnswersReader(pathToAnswersFile);
+            answersReader = new AnwerChecker(pathToAnswersFile);
             restrictionsReader = new RestrictionsReader(pathToRestrictionsFile);
         }
 
@@ -143,16 +143,18 @@ namespace TestingSystemConsole
                         memoryUsage = userExecutable.WorkingSet64 / (1024 * 1024);
                     }
 
-                    // Программа отработала в корректных временных рамках
+                    // В случае, если программа не превысила ограничения по времени работы
 
                     // Получаем от программы данные выходного потока
                     string output = processOutput.ReadToEnd();
+                    // Проверяем выходные данные на корректность
+                    bool passed = answersReader.IsAnswerCorrect(output);
 
                     // Отображаем результаты тестирования в консоли
-                    ShowLogInConsole(testsReader.CurrentTestName, userExecutable.TotalProcessorTime.TotalMilliseconds, memoryUsage, true);
+                    ShowLogInConsole(testsReader.CurrentTestName, userExecutable.TotalProcessorTime.TotalMilliseconds, memoryUsage, passed);
 
                     // Пишем результат тестирования в файл
-                    SaveLogToFile(testsReader.CurrentTestName, userExecutable.TotalProcessorTime.TotalMilliseconds, memoryUsage, true);
+                    SaveLogToFile(testsReader.CurrentTestName, userExecutable.TotalProcessorTime.TotalMilliseconds, memoryUsage, passed);
                 }
                 else
                 {
