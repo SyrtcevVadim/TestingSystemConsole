@@ -4,26 +4,25 @@ using System.IO;
 namespace TestingSystemConsole
 {
     /// <summary>
-    /// Класс для считывания тестовых данных из файла тестовых данных
+    /// Класс для считывания данных из файла с тестовыми данными
     /// </summary>
     class TestsReader
     {
         /// <summary>
-        /// Поток, связанный с файлом с тестами для пользовательской программы
+        /// Поток, связанный с файлом тестов для пользовательской программы
         /// </summary>
         private FileStream testsFile;
 
         /// <summary>
-        /// Поток для чтения, связанный с файлом с тестами
+        /// Поток для чтения, связанный с файлом тестов
         /// </summary>
         private StreamReader reader;
 
-        
-        private uint testsQuantity;
+        private int testsQuantity;
         /// <summary>
         /// Количество тестов в файле
         /// </summary>
-        public uint TestsQuantity
+        public int TestsQuantity
         {
             get
             {
@@ -50,16 +49,23 @@ namespace TestingSystemConsole
 
         public TestsReader(string pathToTestsFile)
         {
-            // Создаем поток, связанный с файлом с тестами
+            // Создаем поток, связанный с файлом тестов
             testsFile = new FileStream(pathToTestsFile, FileMode.Open);
             
             // Создаем для этого файла поток для чтения
             reader = new StreamReader(testsFile);
 
             // Считываем количество тестов в файле
-            testsQuantity = Convert.ToUInt32(reader.ReadLine());
+            testsQuantity = Convert.ToInt32(reader.ReadLine());
             Console.WriteLine("В файле записано {0} тестов!", testsQuantity);
-            hasRemainingTests = true;
+            if(testsQuantity > 0)
+            {
+                hasRemainingTests = true;   
+            }
+            else
+            {
+                hasRemainingTests = false;
+            }
         }
 
         /// <summary>
@@ -75,12 +81,13 @@ namespace TestingSystemConsole
                 {
                     reader.ReadLine();
                 }
-                Console.WriteLine("Мы добрались до теста!");
+                Console.WriteLine("Мы добрались до очередного теста!");
                 string testPrototype = reader.ReadLine();
                 Console.WriteLine("Прототип текущего теста: {0}", testPrototype);
                 currentTestName = testPrototype.Substring(testPrototype.IndexOf(' ') + 1);
                 Console.WriteLine("Название текущего теста: {0}", currentTestName);
-                // Готовимся записывать тестирующую информацию
+
+                // Готовимся записывать тестовые данные
                 string currentTestData = "";
                 while (!reader.EndOfStream && reader.Peek() != '#')
                 {

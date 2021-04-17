@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.IO;
 
 namespace TestingSystemConsole
@@ -33,8 +29,7 @@ namespace TestingSystemConsole
         /// </summary>
         public string GetNextAnswerData()
         {
-            
-            // Прокручиваемся к первому ответу
+            // Двигаем поток к очередному ответу
             while(reader.Peek() != '#')
             {
                 reader.ReadLine();

@@ -13,11 +13,11 @@ namespace TestingSystemConsole
     class RestrictionsReader
     {
 
-        private uint memoryLimitInMegabytes;
+        private int memoryLimitInMegabytes;
         /// <summary>
         /// Ограничение по используемой в пользовательской программе памяти в мегабайтах
         /// </summary>
-        public uint MemoryLimitInMegabytes
+        public int MemoryLimitInMegabytes
         {
             get
             {
@@ -29,11 +29,11 @@ namespace TestingSystemConsole
             }
         }
 
-        private uint timeLimitInMilliseconds;
+        private int timeLimitInMilliseconds;
         /// <summary>
         /// Ограничение по времени работы пользовательской программы для каждого теста в миллисекундах
         /// </summary>
-        public uint TimeLimitInMilliseconds
+        public int TimeLimitInMilliseconds
         {
             get
             {
@@ -49,11 +49,12 @@ namespace TestingSystemConsole
         {
             FileStream restrictionsFile = new FileStream(pathToRestrictionsFile, FileMode.Open);
             StreamReader reader = new StreamReader(restrictionsFile);
+
             // Получаем данные из файла ограничений
             string timeLimitString = reader.ReadLine();
             string memoryLimitString = reader.ReadLine();
-            TimeLimitInMilliseconds = Convert.ToUInt32(timeLimitString.Substring(timeLimitString.IndexOf(' ')));
-            MemoryLimitInMegabytes = Convert.ToUInt32(memoryLimitString.Substring(memoryLimitString.IndexOf(' ')));
+            TimeLimitInMilliseconds = Convert.ToInt32(timeLimitString.Substring(timeLimitString.IndexOf(' ')));
+            MemoryLimitInMegabytes = Convert.ToInt32(memoryLimitString.Substring(memoryLimitString.IndexOf(' ')));
         }
     }
 }

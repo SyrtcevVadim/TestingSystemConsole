@@ -19,12 +19,12 @@ namespace TestingSystemConsole
             // 4 аргумент: путь к файлу с ограничениями
             if (args.Length < 3)
             {
-                Console.WriteLine("Error! Program requires 3 arguments!");
+                Console.WriteLine("Ошибка! Программа требует три обязательных аргумента!");
                 return 1;
             }
             else if(args.Length > 4)
             {
-                Console.WriteLine("Error! Program can handle only 4 arguments!");
+                Console.WriteLine("Ошибка! Программа не может обработать больше 4 аргументов!");
             }
             else if(args.Length == 3)
             {
@@ -44,6 +44,7 @@ namespace TestingSystemConsole
                 pathToAnswersFile = args[2];
                 pathToRestrictionsFile = args[3];
 
+                /*
                 // Тестируем класс TestReader 
                 TestsReader testsReader = new TestsReader(pathToTestsFile);
                 for (uint i = 1; i <= testsReader.TestsQuantity; i++)
@@ -61,7 +62,15 @@ namespace TestingSystemConsole
                 RestrictionsReader restrictionsReader = new RestrictionsReader(pathToRestrictionsFile);
                 Console.WriteLine("Ограничения по использованию памяти: {0} Мб", restrictionsReader.MemoryLimitInMegabytes);
                 Console.WriteLine("Ограничения на время работы пользовательской программы: {0} мс", restrictionsReader.TimeLimitInMilliseconds);
+                */
+                // Тестируем класс Tester
+                Tester tester = new Tester(pathToUserExecutableFile,
+                                           pathToTestsFile,
+                                           pathToAnswersFile,
+                                           pathToRestrictionsFile);
 
+                // Начинаем тестирование
+                tester.Start();
 
             }
 
