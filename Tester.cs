@@ -5,15 +5,10 @@ using System.Diagnostics;
 namespace TestingSystemConsole
 {
     /// <summary>
-    /// Класс, предназначенный для тестирования пользовательской программы на тестовых данных
+    /// Класс, предназначенный для тестирования пользовательской программы
     /// </summary>
     class Tester
     {
-        /// <summary>
-        /// Поток, связанный с файлом результатов тестирования
-        /// </summary>
-        private FileStream logFile;
-
         /// <summary>
         /// Процесс, в котором работает пользовательская программа
         /// </summary>
@@ -34,12 +29,22 @@ namespace TestingSystemConsole
         /// </summary>
         private RestrictionsReader restrictionsReader;
 
-        /// <param name="pathToUserExecutableFile">Путь к файлу пользовательской программы</param>
-        /// <param name="pathToTestsFile">Путь к файлу с тестовыми данными для программы</param>
-        /// <param name="pathToAnswersFile">Путь к файлу с эталонными ответами на тестовые данные</param>
-        /// <param name="pathToRestrictionsFile">Путь к файлу с ограничениями на выполнение программы</param>
-        /// <param name="pathToLogFile">Путь к файлу с результатами тестирования</param>
-        public Tester(string pathToUserExecutableFile, string pathToTestsFile, string pathToAnswersFile, string pathToRestrictionsFile, string pathToLogFile)
+        /// <summary>
+        /// Поток, связанный с файлом результатов тестирования
+        /// </summary>
+        private FileStream logFile;
+
+        /// <param name="pathToUserExecutableFile">Путь к пользовательской программе</param>
+        /// <param name="pathToTestsFile">Путь к файлу тестов</param>
+        /// <param name="pathToAnswersFile">Путь к файлу ответов</param>
+        /// <param name="pathToRestrictionsFile">Путь к файлу с ограничениями</param>
+        /// <param name="pathToLogFile">Путь к файлу результатов тестирования</param>
+        public Tester(
+                        string pathToUserExecutableFile, 
+                        string pathToTestsFile, 
+                        string pathToAnswersFile,
+                        string pathToRestrictionsFile, 
+                        string pathToLogFile)
         {
             // Создаем новый процесс для тестирования пользовательской программы
             userExecutable = new Process();
@@ -56,8 +61,7 @@ namespace TestingSystemConsole
                 Console.WriteLine(e.Message);
             }
             
-
-            // Связываем файлы и объектами для их чтения
+            // Связываем файлы с объектами для их чтения
             testsReader = new TestsReader(pathToTestsFile);
             answersReader = new AnwerChecker(pathToAnswersFile);
             restrictionsReader = new RestrictionsReader(pathToRestrictionsFile);
@@ -72,7 +76,7 @@ namespace TestingSystemConsole
         /// <summary>
         /// Настраивает поток для тестирования пользовательской программы
         /// </summary>
-        /// <param name="pathToUserExecutableFile"></param>
+        /// <param name="pathToUserExecutableFile">Путь к пользовательской программе</param>
         private void ConfigureProcess(string pathToUserExecutableFile)
         {
             try
@@ -86,15 +90,14 @@ namespace TestingSystemConsole
                 userExecutable.StartInfo.CreateNoWindow = true;
 
                 // Делаем возможным перенаправление стандартных потоков ввода/вывода
+                // Это нужно для подачи в пользовательскую программу входных данных 
+                // и для получения вывода программы после тестирования
                 userExecutable.StartInfo.RedirectStandardInput = true;
                 userExecutable.StartInfo.RedirectStandardOutput = true;
-
-                /// Устанавливаем высокий приоритет исполнения для данного потока(чтобы сократить накладные расходы на время тестирования программы)
-                userExecutable.PriorityClass = ProcessPriorityClass.High;
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
+                Console.WriteLine(e);
             }
         }
 
@@ -104,7 +107,7 @@ namespace TestingSystemConsole
         /// </summary>
         public void Start()
         {
-            // Получаем количество тестов для пользовательской программы
+            // Получаем количество тестовых случаев
             int testsQuantity = testsReader.TestsQuantity;
             for (int counter = 0; counter < testsQuantity; counter++)
             {
@@ -114,6 +117,10 @@ namespace TestingSystemConsole
                 // Если процесс был запущен
                 if (userExecutable.Start())
                 {
+                    // Устанавливаем высокий приоритет исполнения для данного потока(чтобы сократить побочное влияние
+                    // другие программ
+                    userExecutable.PriorityClass = ProcessPriorityClass.High;
+
                     // Получаем стандартный поток ввода/вывода тестируемой программы
                     StreamWriter processInput = userExecutable.StandardInput;
                     StreamReader processOutput = userExecutable.StandardOutput;
@@ -122,16 +129,17 @@ namespace TestingSystemConsole
                     // Вводим в тестируемую программу данные
                     processInput.Write(currentTest);
 
-                    Console.WriteLine("Был запущен тест: {0}", (counter + 1));
-
+                    
+                    // Количество использованной процессом памяти
                     long memoryUsage = 0L;
                     // Замеряем время работы программы
-                    DateTime startTestingTime = DateTime.Now;
+                    Stopwatch timer = new Stopwatch();
+                    timer.Start();
                     while (!userExecutable.HasExited)
                     {
-                        TimeSpan executionTime = (DateTime.Now.Subtract(startTestingTime));
+                        timer.Stop();
                         // Ожидаем завершения работы тестируемой программы
-                        if (executionTime.TotalMilliseconds > restrictionsReader.TimeLimitInMilliseconds)
+                        if (timer.Elapsed.Milliseconds > restrictionsReader.TimeLimitInMilliseconds)
                         {
                             // Если время работы программы превысило ограничение по времени, останавливаем процесс
                             userExecutable.Kill();
@@ -142,8 +150,6 @@ namespace TestingSystemConsole
                         // Замеряем количество используемой памяти в мегабайтах
                         memoryUsage = userExecutable.WorkingSet64 / (1024 * 1024);
                     }
-
-                    // В случае, если программа не превысила ограничения по времени работы
 
                     // Получаем от программы данные выходного потока
                     string output = processOutput.ReadToEnd();

@@ -28,6 +28,7 @@ namespace TestingSystemConsole
             }
             else if(args.Length == 3)
             {
+                // Получаем 3 аргумента из консоли
                 pathToUserExecutableFile = args[0];
                 pathToTestsFile = args[1];
                 pathToAnswersFile = args[2];
@@ -39,6 +40,7 @@ namespace TestingSystemConsole
             }
             else if(args.Length == 4)
             {
+                // Получаем 4 аргумента из консоли
                 pathToUserExecutableFile = args[0];
                 pathToTestsFile = args[1];
                 pathToAnswersFile = args[2];

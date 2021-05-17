@@ -57,7 +57,7 @@ namespace TestingSystemConsole
 
             // Считываем количество тестов в файле
             testsQuantity = Convert.ToInt32(reader.ReadLine());
-            Console.WriteLine("В файле записано {0} тестов!", testsQuantity);
+            //Console.WriteLine("В файле записано {0} тестов!", testsQuantity);
             if(testsQuantity > 0)
             {
                 hasRemainingTests = true;   
@@ -81,17 +81,17 @@ namespace TestingSystemConsole
         {
             if (hasRemainingTests)
             {
-                Console.WriteLine("В файле с тестами остались данные!");
+                //Console.WriteLine("В файле с тестами остались данные!");
                 // Двигаем указатель к началу следующего теста
                 while (reader.Peek() != '#')
                 {
                     reader.ReadLine();
                 }
-                Console.WriteLine("Мы добрались до очередного теста!");
+                //Console.WriteLine("Мы добрались до очередного теста!");
                 string testPrototype = reader.ReadLine();
-                Console.WriteLine("Прототип текущего теста: {0}", testPrototype);
+                //Console.WriteLine("Прототип текущего теста: {0}", testPrototype);
                 currentTestName = testPrototype.Substring(testPrototype.IndexOf(' ') + 1);
-                Console.WriteLine("Название текущего теста: {0}", currentTestName);
+                //Console.WriteLine("Название текущего теста: {0}", currentTestName);
 
                 // Готовимся записывать тестовые данные
                 string currentTestData = "";
@@ -101,14 +101,14 @@ namespace TestingSystemConsole
                 }
                 if (reader.EndOfStream)
                 {
-                    Console.WriteLine("Находимся в конце потока!");
+                    //Console.WriteLine("Находимся в конце потока!");
                     hasRemainingTests = false;
                 }
                 return currentTestData;
             }
             else
             {
-                Console.WriteLine("В файле не осталось тестовых данных!");
+                //Console.WriteLine("В файле не осталось тестовых данных!");
                 return "";
             }
         }
