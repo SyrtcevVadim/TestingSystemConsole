@@ -10,7 +10,7 @@ namespace TestingSystemConsole
     /// <summary>
     /// Класс для чтения информации из файла ограничений 
     /// </summary>
-    class RestrictionsReader
+    class RestrictionReader
     {
 
         private int memoryLimitInMegabytes;
@@ -45,7 +45,7 @@ namespace TestingSystemConsole
             }
         }
 
-        public RestrictionsReader(string pathToRestrictionsFile)
+        public RestrictionReader(string pathToRestrictionsFile)
         {
             FileStream restrictionsFile = new FileStream(pathToRestrictionsFile, FileMode.Open);
             StreamReader reader = new StreamReader(restrictionsFile);

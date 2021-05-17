@@ -7,7 +7,7 @@ namespace TestingSystemConsole
     /// <summary>
     /// Класс для чтения информации из файла с эталонными ответами
     /// </summary>
-    class AnwerChecker
+    class AnwerReader
     {
         /// <summary>
         /// Поток, связанный с файлом эталонных ответов
@@ -19,13 +19,13 @@ namespace TestingSystemConsole
         /// </summary>
         private StreamReader reader;
 
-        public AnwerChecker(string pathToAnswersFile)
+        public AnwerReader(string pathToAnswersFile)
         {
             answersFile = new FileStream(pathToAnswersFile, FileMode.Open);
             reader = new StreamReader(answersFile);
         }
 
-        ~AnwerChecker()
+        ~AnwerReader()
         {
             reader.Close();
             answersFile.Close();
@@ -60,7 +60,7 @@ namespace TestingSystemConsole
         public bool IsAnswerCorrect(string result)
         {
 
-            // Удаляем из строк лишние пробельные символы(пробелы, символы новой линии, табуляции)
+            // Удаляем из строк лишние символы(символы новой линии, табуляции)
             string programOutput = Regex.Replace(result, @"\s+", " ");
             string correctOutput = Regex.Replace(GetNextAnswerData(), @"\s+", " ");
 

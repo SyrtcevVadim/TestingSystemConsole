@@ -4,11 +4,41 @@ using System.Diagnostics;
 
 namespace TestingSystemConsole
 {
+    struct TestResult
+    {
+        /// <summary>
+        /// Название теста
+        /// </summary>
+        public string TestName { get; set; }
+        /// <summary>
+        /// Статус теста
+        /// </summary>
+        public bool IsPassed { get; set; }
+        /// <summary>
+        /// Среднее время работы алгоритма для данного теста
+        /// </summary>
+        public double AverageElapsedTime { get; set; }
+        /// <summary>
+        /// Количество использованной памяти(в байтах)
+        /// </summary>
+        public double MemoryUsage { get; set; }
+
+    };
+
     /// <summary>
     /// Класс, предназначенный для тестирования пользовательской программы
     /// </summary>
     class Tester
     {
+        /// <summary>
+        /// Хранит результаты тестирования
+        /// </summary>
+        private TestResult[] results;
+
+        /// <summary>
+        /// Количество итераций для работы одного теста
+        /// </summary>
+        private int testIterations=15;
         /// <summary>
         /// Процесс, в котором работает пользовательская программа
         /// </summary>
@@ -17,17 +47,17 @@ namespace TestingSystemConsole
         /// <summary>
         /// Читает информацию из файла тестов
         /// </summary>
-        private TestsReader testsReader;
+        private TestReader testReader;
 
         /// <summary>
         /// Читает информацию из файлов ответов
         /// </summary>
-        private AnwerChecker answersReader;
+        private AnwerReader answersReader;
 
         /// <summary>
         /// Читает информацию из файлов ограничений
         /// </summary>
-        private RestrictionsReader restrictionsReader;
+        private RestrictionReader restrictionsReader;
 
         /// <summary>
         /// Поток, связанный с файлом результатов тестирования
@@ -43,34 +73,37 @@ namespace TestingSystemConsole
                         string pathToUserExecutableFile, 
                         string pathToTestsFile, 
                         string pathToAnswersFile,
-                        string pathToRestrictionsFile, 
-                        string pathToLogFile)
+                        string pathToRestrictionsFile)
         {
             // Создаем новый процесс для тестирования пользовательской программы
             userExecutable = new Process();
             // Настраиваем поток для работы с пользовательской программой
             ConfigureProcess(pathToUserExecutableFile);
-
             // Создаем файл для сохранения результатов тестирования
-            try
-            {
-                logFile = new FileStream(pathToLogFile, FileMode.Truncate);
-            }
-            catch(Exception e)
-            {
-                Console.WriteLine(e.Message);
-            }
+            MakeLogFile();
             
             // Связываем файлы с объектами для их чтения
-            testsReader = new TestsReader(pathToTestsFile);
-            answersReader = new AnwerChecker(pathToAnswersFile);
-            restrictionsReader = new RestrictionsReader(pathToRestrictionsFile);
+            testReader = new TestReader(pathToTestsFile);
+            answersReader = new AnwerReader(pathToAnswersFile);
+            restrictionsReader = new RestrictionReader(pathToRestrictionsFile);
         }
 
         ~Tester()
         {
             // Освобождаем ресурсы, отведённые для потока
             userExecutable.Dispose();
+        }
+
+        public void MakeLogFile(string pathToLogFile= @"C:/Projects/TestingSystemConsole/TestData/log.txt")
+        {
+            try
+            {
+                logFile = new FileStream(pathToLogFile, FileMode.Truncate);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
         }
 
         /// <summary>
@@ -108,64 +141,91 @@ namespace TestingSystemConsole
         public void Start()
         {
             // Получаем количество тестовых случаев
-            int testsQuantity = testsReader.TestsQuantity;
-            for (int counter = 0; counter < testsQuantity; counter++)
+            int testQuantity = testReader.TestQuantity;
+            // Создаем массив результатов тестирования
+            results = new TestResult[testQuantity];
+            for (int counter = 0; counter < testQuantity; counter++)
             {
+
+                // Записываем название текущего теста
+                results[counter].TestName = testReader.CurrentTestName;
+                results[counter].IsPassed = true;
                 // Получаем тестовые данные
-                string currentTest = testsReader.GetNextTestData();
+                string currentTest = testReader.GetNextTestData();
 
-                // Если процесс был запущен
-                if (userExecutable.Start())
+                // Среднее арифметическое времени работы программы на текущем тесте
+                double workingTimeMean = 0.0;
+                for (int i = 0; i < testIterations; i++)
                 {
-                    // Устанавливаем высокий приоритет исполнения для данного потока(чтобы сократить побочное влияние
-                    // другие программ
-                    userExecutable.PriorityClass = ProcessPriorityClass.High;
-
-                    // Получаем стандартный поток ввода/вывода тестируемой программы
-                    StreamWriter processInput = userExecutable.StandardInput;
-                    StreamReader processOutput = userExecutable.StandardOutput;
-
-
-                    // Вводим в тестируемую программу данные
-                    processInput.Write(currentTest);
-
                     
-                    // Количество использованной процессом памяти
-                    long memoryUsage = 0L;
-                    // Замеряем время работы программы
-                    Stopwatch timer = new Stopwatch();
-                    timer.Start();
-                    while (!userExecutable.HasExited)
+                    if (userExecutable.Start())
                     {
-                        timer.Stop();
+                        // Устанавливаем высокий приоритет исполнения для данного потока чтобы сократить побочное влияние других программ
+                        userExecutable.PriorityClass = ProcessPriorityClass.High;
+
+                        // Получаем стандартный поток ввода/вывода тестируемой программы
+                        StreamWriter processInput = userExecutable.StandardInput;
+                        StreamReader processOutput = userExecutable.StandardOutput;
+
+                        // Вводим в тестируемую программу данные
+                        processInput.Write(currentTest);
+
+                        // Замеряем время работы программы
+                        Stopwatch timer = new Stopwatch();
+                        timer.Start();
                         // Ожидаем завершения работы тестируемой программы
-                        if (timer.Elapsed.Milliseconds > restrictionsReader.TimeLimitInMilliseconds)
+                        while (!userExecutable.HasExited)
                         {
-                            // Если время работы программы превысило ограничение по времени, останавливаем процесс
-                            userExecutable.Kill();
-                            Console.WriteLine("Программа не прошла {0} тест по времени.\nТекущее ограничение по времени: {1} мс!\n", (counter + 1),
-                                                                                                        restrictionsReader.TimeLimitInMilliseconds);
+                            // Если алгоритм превысил допустимое время работы
+                            if (timer.ElapsedMilliseconds > restrictionsReader.TimeLimitInMilliseconds)
+                            {
+                                userExecutable.Kill();
+                                timer.Stop();
+                                results[counter].IsPassed = false;
+                                results[counter].MemoryUsage = userExecutable.WorkingSet64;
+                                results[counter].AverageElapsedTime = restrictionsReader.TimeLimitInMilliseconds;
+                                Console.WriteLine("Программа не прошла {0} тест по времени.\nТекущее ограничение по времени: {1} мс!\n", (counter + 1),
+                                                                                                            restrictionsReader.TimeLimitInMilliseconds);
+                                break;
+                            }
+                            results[counter].MemoryUsage = userExecutable.WorkingSet64;
+                        }
+                        timer.Stop();
+                        
+                        // Проверяем удовлетворение ограничениям
+                        if (results[counter].IsPassed)
+                        {
+                            workingTimeMean += timer.ElapsedMilliseconds;
+                        }
+                        else
+                        {
                             break;
                         }
-                        // Замеряем количество используемой памяти в мегабайтах
-                        memoryUsage = userExecutable.WorkingSet64 / (1024 * 1024);
+
+                        // Для первой итерации будем проверять корректность работы программы
+                        if (i == 0)
+                        {
+                            // Получаем от программы данные выходного потока
+                            string output = processOutput.ReadToEnd();
+                            // Проверяем выходные данные на корректность
+                            results[counter].IsPassed = answersReader.IsAnswerCorrect(output);
+                            
+                        }     
                     }
-
-                    // Получаем от программы данные выходного потока
-                    string output = processOutput.ReadToEnd();
-                    // Проверяем выходные данные на корректность
-                    bool passed = answersReader.IsAnswerCorrect(output);
-
-                    // Отображаем результаты тестирования в консоли
-                    ShowLogInConsole(testsReader.CurrentTestName, userExecutable.TotalProcessorTime.TotalMilliseconds, memoryUsage, passed);
-
-                    // Пишем результат тестирования в файл
-                    SaveLogToFile(testsReader.CurrentTestName, userExecutable.TotalProcessorTime.TotalMilliseconds, memoryUsage, passed);
+                    else
+                    {
+                        throw new Exception("Процесс не был создан. Тест:" + counter); 
+                    }
                 }
-                else
-                {
-                    Console.WriteLine("Процесс для теста {0} не был создан!!1", (counter + 1));
-                }
+                // Подсчитываем среднее время работы программы для текущего теста
+                workingTimeMean /= testIterations;
+                results[counter].AverageElapsedTime = workingTimeMean;
+
+                // Отображаем результаты тестирования в консоли
+                ShowLogInConsole(results[counter]);
+
+                // Пишем результат тестирования в файл
+                SaveLogToFile(results[counter]);
             }
         }
 
@@ -176,11 +236,13 @@ namespace TestingSystemConsole
         /// <param name="executionTime">Время, затраченное программой на выполнение теста</param>
         /// <param name="memoryUsage">Количество используемой программой памяти в мегабайтах</param>
         /// <param name="passed">Показывает, пройден программой данный тест или нет</param>
-        public void SaveLogToFile(string testName, double executionTime, long memoryUsage, bool passed)
+        public void SaveLogToFile(TestResult result)
         {
             StreamWriter logStream = new StreamWriter(logFile);
-            logStream.WriteLine(String.Format("Тест: {0} | Статус: {1} | Время исполнения: {2} мс | Объем использованной памяти {3} Мб |\n",
-                                            testName, (passed) ? "пройден" : "не пройден", executionTime, memoryUsage));
+            logStream.WriteLine(String.Format("Тест: {0} | Статус: {1} | Время исполнения: {2:#.##} мс | Объем использованной памяти {3} б |\n",
+                                            result.TestName, 
+                                            (result.IsPassed) ? "пройден" : "не пройден", 
+                                            result.AverageElapsedTime, result.MemoryUsage));
             logStream.Flush();
         }
 
@@ -191,10 +253,12 @@ namespace TestingSystemConsole
         /// <param name="executionTime">Время, затраченное программой на выполнение теста</param>
         /// <param name="memoryUsage">Количество используемой программой памяти в мегабайтах</param>
         /// <param name="passed">Показывае, пройден программой данный тест или нет</param>
-        public void ShowLogInConsole(string testName, double executionTime, long memoryUsage, bool passed)
+        public void ShowLogInConsole(TestResult result)
         {
-            Console.WriteLine(String.Format("Тест: {0} | Статус: {1} | Время исполнения: {2} мс | Объем использованной памяти {3} Мб |\n",
-                                            testName, ((passed)?"пройден":"не пройден"),executionTime, memoryUsage));
+            Console.WriteLine(String.Format("Тест: {0} | Статус: {1} | Время исполнения: {2:#.##} мс | Объем использованной памяти {3} б |\n",
+                                            result.TestName, (result.IsPassed)?"пройден":"не пройден",
+                                            result.AverageElapsedTime,
+                                            result.MemoryUsage));
         }
     }
 }

@@ -6,7 +6,7 @@ namespace TestingSystemConsole
     /// <summary>
     /// Класс для считывания данных из файла с тестовыми данными
     /// </summary>
-    class TestsReader
+    class TestReader
     {
         /// <summary>
         /// Поток, связанный с файлом тестов для пользовательской программы
@@ -22,7 +22,7 @@ namespace TestingSystemConsole
         /// <summary>
         /// Количество тестов в файле
         /// </summary>
-        public int TestsQuantity
+        public int TestQuantity
         {
             get
             {
@@ -42,14 +42,15 @@ namespace TestingSystemConsole
             }
         }
 
-        /// <summary>
-        /// Флаг, показывающий, остались ли в файле тесты для считывания или нет.
-        /// </summary>
-        private bool hasRemainingTests;
 
-        public TestsReader(string pathToTestsFile)
+        /// <summary>
+        /// Номер текущего теста
+        /// </summary>
+        private int currentTestNumber;
+
+        public TestReader(string pathToTestsFile)
         {
-            // Создаем поток, связанный с файлом тестов
+            // Открываем файл тестов
             testsFile = new FileStream(pathToTestsFile, FileMode.Open);
             
             // Создаем для этого файла поток для чтения
@@ -57,18 +58,18 @@ namespace TestingSystemConsole
 
             // Считываем количество тестов в файле
             testsQuantity = Convert.ToInt32(reader.ReadLine());
-            //Console.WriteLine("В файле записано {0} тестов!", testsQuantity);
+            Console.WriteLine("В файле записано {0} тестов!", testsQuantity);
             if(testsQuantity > 0)
             {
-                hasRemainingTests = true;   
+                currentTestNumber = 1; 
             }
             else
             {
-                hasRemainingTests = false;
+                throw new Exception("Файл тестов пуст!");
             }
         }
 
-        ~TestsReader()
+        ~TestReader()
         {
             reader.Close();
             testsFile.Close();
@@ -79,19 +80,18 @@ namespace TestingSystemConsole
         /// </summary>
         public string GetNextTestData()
         {
-            if (hasRemainingTests)
+            if (currentTestNumber <= testsQuantity)
             {
-                //Console.WriteLine("В файле с тестами остались данные!");
+                Console.WriteLine("В файле с тестами остались данные!");
+                Console.WriteLine("Считываем тест: {0}", currentTestNumber);
                 // Двигаем указатель к началу следующего теста
                 while (reader.Peek() != '#')
                 {
                     reader.ReadLine();
                 }
-                //Console.WriteLine("Мы добрались до очередного теста!");
                 string testPrototype = reader.ReadLine();
-                //Console.WriteLine("Прототип текущего теста: {0}", testPrototype);
                 currentTestName = testPrototype.Substring(testPrototype.IndexOf(' ') + 1);
-                //Console.WriteLine("Название текущего теста: {0}", currentTestName);
+                Console.WriteLine("Название текущего теста: {0}", currentTestName);
 
                 // Готовимся записывать тестовые данные
                 string currentTestData = "";
@@ -101,14 +101,14 @@ namespace TestingSystemConsole
                 }
                 if (reader.EndOfStream)
                 {
-                    //Console.WriteLine("Находимся в конце потока!");
-                    hasRemainingTests = false;
+                    Console.WriteLine("Находимся в конце потока!");
                 }
+                currentTestNumber++;
                 return currentTestData;
             }
             else
             {
-                //Console.WriteLine("В файле не осталось тестовых данных!");
+                Console.WriteLine("В файле не осталось тестовых данных!");
                 return "";
             }
         }

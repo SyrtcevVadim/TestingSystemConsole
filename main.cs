@@ -50,7 +50,7 @@ namespace TestingSystemConsole
                 Tester tester = new Tester(pathToUserExecutableFile,
                                            pathToTestsFile,
                                            pathToAnswersFile,
-                                           pathToRestrictionsFile, @"C:/Projects/TestingSystemConsole/TestData/log.txt");
+                                           pathToRestrictionsFile);
 
                 // Начинаем тестирование
                 tester.Start();
