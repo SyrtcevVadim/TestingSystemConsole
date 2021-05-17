@@ -146,12 +146,12 @@ namespace TestingSystemConsole
             results = new TestResult[testQuantity];
             for (int counter = 0; counter < testQuantity; counter++)
             {
-
-                // Записываем название текущего теста
-                results[counter].TestName = testReader.CurrentTestName;
+                // Изначально мы считаем, что тест пройден
                 results[counter].IsPassed = true;
                 // Получаем тестовые данные
                 string currentTest = testReader.GetNextTestData();
+                // Записываем название текущего теста
+                results[counter].TestName = testReader.CurrentTestName;
 
                 // Среднее арифметическое времени работы программы на текущем тесте
                 double workingTimeMean = 0.0;
@@ -184,8 +184,6 @@ namespace TestingSystemConsole
                                 results[counter].IsPassed = false;
                                 results[counter].MemoryUsage = userExecutable.WorkingSet64;
                                 results[counter].AverageElapsedTime = restrictionsReader.TimeLimitInMilliseconds;
-                                Console.WriteLine("Программа не прошла {0} тест по времени.\nТекущее ограничение по времени: {1} мс!\n", (counter + 1),
-                                                                                                            restrictionsReader.TimeLimitInMilliseconds);
                                 break;
                             }
                             results[counter].MemoryUsage = userExecutable.WorkingSet64;
@@ -221,9 +219,6 @@ namespace TestingSystemConsole
                 workingTimeMean /= testIterations;
                 results[counter].AverageElapsedTime = workingTimeMean;
 
-                // Отображаем результаты тестирования в консоли
-                ShowLogInConsole(results[counter]);
-
                 // Пишем результат тестирования в файл
                 SaveLogToFile(results[counter]);
             }
@@ -239,7 +234,7 @@ namespace TestingSystemConsole
         public void SaveLogToFile(TestResult result)
         {
             StreamWriter logStream = new StreamWriter(logFile);
-            logStream.WriteLine(String.Format("Тест: {0} | Статус: {1} | Время исполнения: {2:#.##} мс | Объем использованной памяти {3} б |\n",
+            logStream.WriteLine(String.Format("Тест: {0} | Статус: {1} | Время исполнения: {2:#.##} мс | Объем использованной памяти {3}б |\n",
                                             result.TestName, 
                                             (result.IsPassed) ? "пройден" : "не пройден", 
                                             result.AverageElapsedTime, result.MemoryUsage));
@@ -247,18 +242,35 @@ namespace TestingSystemConsole
         }
 
         /// <summary>
-        /// Отображает результат прохождения теста в консоли
+        /// Отображает результаты тестирования в консоли
         /// </summary>
         /// <param name="testName">Название теста</param>
         /// <param name="executionTime">Время, затраченное программой на выполнение теста</param>
         /// <param name="memoryUsage">Количество используемой программой памяти в мегабайтах</param>
         /// <param name="passed">Показывае, пройден программой данный тест или нет</param>
-        public void ShowLogInConsole(TestResult result)
+        public void ShowResultsInConsole()
         {
-            Console.WriteLine(String.Format("Тест: {0} | Статус: {1} | Время исполнения: {2:#.##} мс | Объем использованной памяти {3} б |\n",
-                                            result.TestName, (result.IsPassed)?"пройден":"не пройден",
-                                            result.AverageElapsedTime,
-                                            result.MemoryUsage));
+            for (int i = 0; i < results.Length; i++)
+            {
+                
+                if(results[i].IsPassed)
+                {
+                    // Если тест пройден, выводим сообщение о нём зеленым цветом
+                    Console.ForegroundColor = ConsoleColor.Green;
+                }
+                else
+                {
+                    // Если тест не пройден, выводим сообщение о нем красным цветом
+                    Console.ForegroundColor = ConsoleColor.Red;
+                }
+                Console.WriteLine(String.Format("Тест: {0,-6} | Статус: {1,-10} | Время исполнения: {2:#.##} мс | Объем использованной памяти {3,-5} б |\n",
+                                            results[i].TestName, (results[i].IsPassed) ? "пройден" : "не пройден",
+                                            results[i].AverageElapsedTime,
+                                            results[i].MemoryUsage));
+                
+            }
+            // Возвращаем консоли нормальный цвет
+            Console.ForegroundColor = ConsoleColor.White;
         }
     }
 }

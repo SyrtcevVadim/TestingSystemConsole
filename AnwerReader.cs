@@ -41,8 +41,8 @@ namespace TestingSystemConsole
             {
                 reader.ReadLine();
             }
-            // Считываем прототип ответа
-            Console.WriteLine(reader.ReadLine());
+            // Считываем маркер нового блока ответов
+            reader.ReadLine();
             string currentAnswerData = "";
             while(!reader.EndOfStream && reader.Peek() != '#')
             {

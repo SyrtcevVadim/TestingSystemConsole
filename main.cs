@@ -54,6 +54,8 @@ namespace TestingSystemConsole
 
                 // Начинаем тестирование
                 tester.Start();
+                // Выводим результаты тестирования в консоль
+                tester.ShowResultsInConsole();
             }
 
             return 0;
