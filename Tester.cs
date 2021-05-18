@@ -140,6 +140,7 @@ namespace TestingSystemConsole
         /// </summary>
         public void Start()
         {
+            Console.WriteLine("Система запущена!");
             // Получаем количество тестовых случаев
             int testQuantity = testReader.TestQuantity;
             // Создаем массив результатов тестирования
